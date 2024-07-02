@@ -3,11 +3,10 @@
 
 from functools import partial
 
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from common.serializers import CommonBulkSerializerMixin, ResourceLabelsMixin
+from common.serializers import ResourceLabelsMixin, CommonBulkModelSerializer
 from common.serializers.fields import (
     EncryptedField, ObjectRelatedField, LabeledChoiceField, PhoneField
 )
@@ -42,12 +41,15 @@ def default_org_roles():
 class RolesSerializerMixin(serializers.Serializer):
     system_roles = ObjectRelatedField(
         queryset=Role.system_roles, attrs=('id', 'display_name'),
-        label=_("System roles"), many=True, default=default_system_roles
+        label=_("System roles"), many=True, default=default_system_roles,
+        help_text=_("System roles are roles at the system level, and they will take effect across all organizations")
     )
     org_roles = ObjectRelatedField(
         queryset=Role.org_roles, attrs=('id', 'display_name', 'name'),
         label=_("Org roles"), many=True, required=False,
-        default=default_org_roles
+        default=default_org_roles,
+        help_text=_(
+            "Org roles are roles at the organization level, and they will only take effect within current organization")
     )
     orgs_roles = serializers.JSONField(read_only=True, label=_("Organizations and roles"))
 
@@ -85,13 +87,13 @@ class RolesSerializerMixin(serializers.Serializer):
         return fields
 
 
-class UserSerializer(RolesSerializerMixin, CommonBulkSerializerMixin, ResourceLabelsMixin, serializers.ModelSerializer):
+class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelSerializer):
     password_strategy = LabeledChoiceField(
         choices=PasswordStrategy.choices,
         default=PasswordStrategy.email,
         allow_null=True,
         required=False,
-        label=_("Password strategy"),
+        label=_("Password setting"),
     )
     mfa_enabled = serializers.BooleanField(read_only=True, label=_("MFA enabled"))
     mfa_force_enabled = serializers.BooleanField(
@@ -169,6 +171,12 @@ class UserSerializer(RolesSerializerMixin, CommonBulkSerializerMixin, ResourceLa
                 "allow_null": True,
                 "allow_blank": True,
             },
+            "groups": {
+                "label": _("Groups"),
+            },
+            "is_superuser": {
+                "label": _("Superuser")
+            },
             "public_key": {"write_only": True},
             "is_first_login": {"label": _("Is first login"), "read_only": True},
             "is_active": {"label": _("Is active")},
@@ -183,6 +191,10 @@ class UserSerializer(RolesSerializerMixin, CommonBulkSerializerMixin, ResourceLa
             'mfa_level': {'label': _("MFA level")},
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.update_source_choices()
+
     def get_fields(self):
         fields = super().get_fields()
         self.pop_fields_if_need(fields)
@@ -193,6 +205,15 @@ class UserSerializer(RolesSerializerMixin, CommonBulkSerializerMixin, ResourceLa
         if not current_org.is_root():
             for f in self.Meta.fields_only_root_org:
                 fields.pop(f, None)
+
+    def update_source_choices(self):
+        source = self.fields.get("source")
+        if not source:
+            return
+        open_source = ['local', 'ldap', 'cas']
+        # if not settings.XPACK_ENABLED:
+        choices = {k: v for k, v in source.choices.items() if k in open_source}
+        source.choices = list(choices.items())
 
     def validate_password(self, password):
         password_strategy = self.initial_data.get("password_strategy")
@@ -302,8 +323,8 @@ class InviteSerializer(RolesSerializerMixin, serializers.Serializer):
     users = serializers.PrimaryKeyRelatedField(
         queryset=User.get_nature_users(),
         many=True,
-        label=_("Select users"),
-        help_text=_("For security, only list several users"),
+        label=_("Users"),
+        help_text=_("For security, only a partial of users is displayed. You can search for more"),
     )
     system_roles = None
 

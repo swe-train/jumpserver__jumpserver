@@ -43,17 +43,6 @@ class SecretReadableMixin(serializers.Serializer):
             if 'write_only' not in field_extra_kwargs:
                 continue
             serializer_field.write_only = field_extra_kwargs['write_only']
-        self.remove_spec_info_field()
-
-    def remove_spec_info_field(self):
-        request = self.context.get('request')
-        if not request:
-            return
-
-        _format = request.query_params.get('format')
-        if _format not in ['csv', 'xlsx']:
-            return
-        self.fields.pop('spec_info', None)
 
 
 class BulkSerializerMixin(object):
@@ -367,6 +356,7 @@ class SomeFieldsMixin:
     def order_fields(fields):
         bool_fields = []
         datetime_fields = []
+        common_fields = []
         other_fields = []
 
         for name, field in fields.items():
@@ -375,9 +365,11 @@ class SomeFieldsMixin:
                 bool_fields.append(to_add)
             elif isinstance(field, serializers.DateTimeField):
                 datetime_fields.append(to_add)
+            elif name in ('comment', 'created_by', 'updated_by'):
+                common_fields.append(to_add)
             else:
                 other_fields.append(to_add)
-        _fields = [*other_fields, *bool_fields, *datetime_fields]
+        _fields = [*other_fields, *bool_fields, *datetime_fields, *common_fields]
         fields = OrderedDict()
         for name, field in _fields:
             fields[name] = field

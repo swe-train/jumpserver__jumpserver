@@ -300,16 +300,12 @@ class BasePlaybookManager:
             for host in hosts:
                 result = cb.host_results.get(host)
                 if state == 'ok':
-                    self.on_host_success(host, result.get('ok', ''))
+                    self.on_host_success(host, result)
                 elif state == 'skipped':
                     pass
                 else:
                     error = hosts.get(host)
-                    self.on_host_error(
-                        host, error,
-                        result.get('failures', '')
-                        or result.get('dark', '')
-                    )
+                    self.on_host_error(host, error, result)
 
     def on_runner_failed(self, runner, e):
         print("Runner failed: {} {}".format(e, self))
