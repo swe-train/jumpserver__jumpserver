@@ -14,8 +14,8 @@ __all__ = ('ServerPerformanceMessage', 'ServerPerformanceCheckUtil')
 
 
 class ServerPerformanceMessage(SystemMessage):
-    category = 'Components'
-    category_label = _('Component')
+    category = 'Operations'
+    category_label = _('App ops')
     message_type_label = _('Server performance')
 
     def __init__(self, terms_with_errors):

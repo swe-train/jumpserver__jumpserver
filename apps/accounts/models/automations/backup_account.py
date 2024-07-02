@@ -24,9 +24,9 @@ logger = get_logger(__file__)
 class AccountBackupAutomation(PeriodTaskModelMixin, JMSOrgBaseModel):
     types = models.JSONField(default=list)
     backup_type = models.CharField(max_length=128, choices=AccountBackupType.choices,
-                                   default=AccountBackupType.email.value, verbose_name=_('Backup type'))
-    is_password_divided_by_email = models.BooleanField(default=True, verbose_name=_('Password divided'))
-    is_password_divided_by_obj_storage = models.BooleanField(default=True, verbose_name=_('Password divided'))
+                                   default=AccountBackupType.email.value, verbose_name=_('Backup Type'))
+    is_password_divided_by_email = models.BooleanField(default=True, verbose_name=_('Is Password Divided'))
+    is_password_divided_by_obj_storage = models.BooleanField(default=True, verbose_name=_('Is Password Divided'))
     recipients_part_one = models.ManyToManyField(
         'users.User', related_name='recipient_part_one_plans', blank=True,
         verbose_name=_("Recipient part one")
@@ -37,15 +37,14 @@ class AccountBackupAutomation(PeriodTaskModelMixin, JMSOrgBaseModel):
     )
     obj_recipients_part_one = models.ManyToManyField(
         'terminal.ReplayStorage', related_name='obj_recipient_part_one_plans', blank=True,
-        verbose_name=_("Object storage recipient part one")
+        verbose_name=_("Object Storage Recipient part one")
     )
     obj_recipients_part_two = models.ManyToManyField(
         'terminal.ReplayStorage', related_name='obj_recipient_part_two_plans', blank=True,
-        verbose_name=_("Object storage recipient part two")
+        verbose_name=_("Object Storage Recipient part two")
     )
-    zip_encrypt_password = fields.EncryptCharField(
-        max_length=4096, blank=True, null=True, verbose_name=_('Zip encrypt password')
-    )
+    zip_encrypt_password = fields.EncryptCharField(max_length=4096, blank=True, null=True,
+                                                   verbose_name=_('Zip Encrypt Password'))
 
     def __str__(self):
         return f'{self.name}({self.org_id})'

@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class AssetsConfig(AppConfig):
     name = 'assets'
-    verbose_name = _('App Assets')
+    verbose_name = _('App assets')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

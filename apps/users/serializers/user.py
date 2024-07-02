@@ -3,11 +3,10 @@
 
 from functools import partial
 
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
-from common.serializers import ResourceLabelsMixin, CommonBulkModelSerializer
+from common.serializers import CommonBulkSerializerMixin, ResourceLabelsMixin
 from common.serializers.fields import (
     EncryptedField, ObjectRelatedField, LabeledChoiceField, PhoneField
 )
@@ -85,13 +84,13 @@ class RolesSerializerMixin(serializers.Serializer):
         return fields
 
 
-class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelSerializer):
+class UserSerializer(RolesSerializerMixin, CommonBulkSerializerMixin, ResourceLabelsMixin, serializers.ModelSerializer):
     password_strategy = LabeledChoiceField(
         choices=PasswordStrategy.choices,
         default=PasswordStrategy.email,
         allow_null=True,
         required=False,
-        label=_("Password setting"),
+        label=_("Password strategy"),
     )
     mfa_enabled = serializers.BooleanField(read_only=True, label=_("MFA enabled"))
     mfa_force_enabled = serializers.BooleanField(
@@ -124,12 +123,11 @@ class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelS
         fields_write_only = [
             "password", "public_key",
         ]
-        # xpack 包含的字段
-        fields_xpack = ["wecom_id", "dingtalk_id", "feishu_id", "lark_id", "slack_id"]
         # small 指的是 不需要计算的直接能从一张表中获取到的数据
         fields_small = fields_mini + fields_write_only + [
             "email", "wechat", "phone", "mfa_level", "source",
-            *fields_xpack, "created_by", "updated_by", "comment",  # 通用字段
+            "wecom_id", "dingtalk_id", "feishu_id", "lark_id",
+            "slack_id", "created_by", "updated_by", "comment",  # 通用字段
         ]
         fields_date = [
             "date_expired", "date_joined", "last_login",
@@ -158,7 +156,8 @@ class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelS
 
         read_only_fields = [
             "date_joined", "last_login", "created_by",
-            "is_first_login", *fields_xpack, "date_api_key_last_used",
+            "is_first_login", "wecom_id", "dingtalk_id",
+            "feishu_id", "lark_id", "date_api_key_last_used",
         ]
         fields_only_root_org = ["orgs_roles"]
         disallow_self_update_fields = ["is_active", "system_roles", "org_roles"]
@@ -168,12 +167,6 @@ class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelS
                 "required": False,
                 "allow_null": True,
                 "allow_blank": True,
-            },
-            "groups": {
-                "label": _("Groups"),
-            },
-            "is_superuser": {
-                "label": _("Superuser")
             },
             "public_key": {"write_only": True},
             "is_first_login": {"label": _("Is first login"), "read_only": True},
@@ -188,7 +181,7 @@ class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelS
             "is_otp_secret_key_bound": {"label": _("Is OTP bound")},
             'mfa_level': {'label': _("MFA level")},
         }
-
+    
     def get_fields(self):
         fields = super().get_fields()
         self.pop_fields_if_need(fields)
@@ -199,7 +192,7 @@ class UserSerializer(RolesSerializerMixin, ResourceLabelsMixin, CommonBulkModelS
         if not current_org.is_root():
             for f in self.Meta.fields_only_root_org:
                 fields.pop(f, None)
-
+    
     def validate_password(self, password):
         password_strategy = self.initial_data.get("password_strategy")
         if self.instance is None and password_strategy != PasswordStrategy.custom:
@@ -308,8 +301,8 @@ class InviteSerializer(RolesSerializerMixin, serializers.Serializer):
     users = serializers.PrimaryKeyRelatedField(
         queryset=User.get_nature_users(),
         many=True,
-        label=_("Users"),
-        help_text=_("For security, only a partial of users is displayed. You can search for more"),
+        label=_("Select users"),
+        help_text=_("For security, only list several users"),
     )
     system_roles = None
 

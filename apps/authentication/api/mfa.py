@@ -50,10 +50,7 @@ class MFASendCodeApi(AuthMixin, CreateAPIView):
         mfa_type = serializer.validated_data['type']
 
         if not username:
-            try:
-                user = self.get_user_from_session()
-            except errors.SessionEmptyError as e:
-                raise ValidationError({'error': e})
+            user = self.get_user_from_session()
         else:
             user = self.get_user_from_db(username)
 

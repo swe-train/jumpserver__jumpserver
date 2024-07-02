@@ -170,9 +170,9 @@ class CommandAlertMessage(CommandAlertMixin, SystemMessage):
 
 
 class CommandExecutionAlert(CommandAlertMixin, SystemMessage):
-    category = 'Workbench'
-    category_label = _('Job')
-    message_type_label = _('Command reject')
+    category = CATEGORY
+    category_label = CATEGORY_LABEL
+    message_type_label = _('Batch danger command alert')
 
     def __init__(self, command):
         self.command = command
@@ -222,7 +222,7 @@ class CommandExecutionAlert(CommandAlertMixin, SystemMessage):
 class StorageConnectivityMessage(SystemMessage):
     category = 'storage'
     category_label = _('Command and replay storage')
-    message_type_label = _('Connectivity')
+    message_type_label = _('Connectivity alarm')
 
     def __init__(self, errors):
         self.errors = errors

@@ -36,7 +36,7 @@ class EmailSettingSerializer(serializers.Serializer):
         help_text=_("Tips: Some provider use token except password")
     )
     EMAIL_FROM = serializers.CharField(
-        max_length=128, allow_blank=True, required=False, label=_('Sender'),
+        max_length=128, allow_blank=True, required=False, label=_('Send user'),
         help_text=_('Tips: Send mail account, default SMTP account as the send account')
     )
     EMAIL_RECIPIENT = serializers.CharField(
@@ -65,17 +65,17 @@ class EmailContentSettingSerializer(serializers.Serializer):
 
     EMAIL_CUSTOM_USER_CREATED_SUBJECT = serializers.CharField(
         max_length=1024, allow_blank=True, required=False,
-        label=_('Subject'),
+        label=_('Create user email subject'),
         help_text=_('Tips: When creating a user, send the subject of the email (eg:Create account successfully)')
     )
     EMAIL_CUSTOM_USER_CREATED_HONORIFIC = serializers.CharField(
         max_length=1024, allow_blank=True, required=False,
-        label=_('Honorific'),
+        label=_('Create user honorific'),
         help_text=_('Tips: When creating a user, send the honorific of the email (eg:Hello)')
     )
     EMAIL_CUSTOM_USER_CREATED_BODY = serializers.CharField(
         max_length=4096, allow_blank=True, required=False,
-        label=_('Content'),
+        label=_('Create user email content'),
         help_text=_(
             'Tips: When creating a user, send the content of the email, support {username} {name} {email} label')
     )

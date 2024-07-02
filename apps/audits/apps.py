@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class AuditsConfig(AppConfig):
     name = 'audits'
-    verbose_name = _('App Audits')
+    verbose_name = _('Audits')
 
     def ready(self):
         from . import signal_handlers  # noqa

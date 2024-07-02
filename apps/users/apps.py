@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class UsersConfig(AppConfig):
     name = 'users'
-    verbose_name = _('App Users')
+    verbose_name = _('Users')
 
     def ready(self):
         from . import signal_handlers  # noqa

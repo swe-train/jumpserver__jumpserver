@@ -35,7 +35,8 @@ class AccountBackupSerializer(PeriodTaskSerializerMixin, BulkOrgResourceModelSer
         ]
         extra_kwargs = {
             'name': {'required': True},
-            'executed_amount': {'label': _('Executions')},
+            'periodic_display': {'label': _('Periodic perform')},
+            'executed_amount': {'label': _('Executed amount')},
             'recipients': {
                 'label': _('Recipient'),
                 'help_text': _('Currently only mail sending is supported')

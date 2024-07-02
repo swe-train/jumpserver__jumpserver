@@ -131,6 +131,7 @@ INSTALLED_APPS = [
     'terminal.apps.TerminalConfig',
     'audits.apps.AuditsConfig',
     'authentication.apps.AuthenticationConfig',  # authentication
+    'applications.apps.ApplicationsConfig',
     'tickets.apps.TicketsConfig',
     'acls.apps.AclsConfig',
     'notifications.apps.NotificationsConfig',
@@ -296,7 +297,7 @@ USE_TZ = True
 
 # I18N translation
 LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'i18n', 'core'),
+    os.path.join(BASE_DIR, 'locale'),
 ]
 
 # Static files (CSS, JavaScript, Images)

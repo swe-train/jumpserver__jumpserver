@@ -31,9 +31,7 @@ class AccountCreateUpdateSerializerMixin(serializers.Serializer):
         default=False, label=_("Push now"), write_only=True
     )
     params = serializers.JSONField(
-        decoder=None, encoder=None, required=False,
-        style={'base_template': 'textarea.html'},
-        label=_('Params'),
+        decoder=None, encoder=None, required=False, style={'base_template': 'textarea.html'}
     )
     on_invalid = LabeledChoiceField(
         choices=AccountInvalidPolicy.choices, default=AccountInvalidPolicy.ERROR,
@@ -227,7 +225,7 @@ class AccountSerializer(AccountCreateUpdateSerializerMixin, BaseAccountSerialize
         fields = BaseAccountSerializer.Meta.fields + [
             'su_from', 'asset', 'version',
             'source', 'source_id', 'connectivity',
-        ] + list(set(AccountCreateUpdateSerializerMixin.Meta.fields) - {'params'})
+        ] + AccountCreateUpdateSerializerMixin.Meta.fields
         read_only_fields = BaseAccountSerializer.Meta.read_only_fields + [
             'connectivity'
         ]

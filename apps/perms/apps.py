@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class PermsConfig(AppConfig):
     name = 'perms'
-    verbose_name = _('App Permissions')
+    verbose_name = _('App permissions')
 
     def ready(self):
         from . import signal_handlers  # noqa

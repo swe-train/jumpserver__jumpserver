@@ -20,12 +20,14 @@ class PeriodTaskModelMixin(models.Model):
     name = models.CharField(
         max_length=128, unique=False, verbose_name=_("Name")
     )
-    is_periodic = models.BooleanField(default=False, verbose_name=_("Periodic run"))
+    is_periodic = models.BooleanField(default=False, verbose_name=_("Periodic perform"))
     interval = models.IntegerField(
-        default=24, null=True, blank=True, verbose_name=_("Interval"),
+        default=24, null=True, blank=True,
+        verbose_name=_("Cycle perform"),
     )
     crontab = models.CharField(
-        blank=True, max_length=128, null=True, verbose_name=_("Crontab"),
+        null=True, blank=True, max_length=128,
+        verbose_name=_("Regularly perform"),
     )
 
     @abc.abstractmethod
@@ -83,9 +85,9 @@ class PeriodTaskModelMixin(models.Model):
     @property
     def periodic_display(self):
         if self.is_periodic and self.crontab:
-            return _('Crontab') + " ( {} )".format(self.crontab)
+            return _('Regularly perform') + " ( {} )".format(self.crontab)
         if self.is_periodic and self.interval:
-            return _('Interval') + " ( {} h )".format(self.interval)
+            return _('Cycle perform') + " ( {} h )".format(self.interval)
         return '-'
 
     @property
@@ -99,15 +101,14 @@ class PeriodTaskModelMixin(models.Model):
 
 
 class PeriodTaskSerializerMixin(serializers.Serializer):
-    is_periodic = serializers.BooleanField(default=True, label=_("Periodic run"))
+    is_periodic = serializers.BooleanField(default=True, label=_("Periodic perform"))
     crontab = serializers.CharField(
         max_length=128, allow_blank=True,
-        allow_null=True, required=False, label=_('Crontab')
+        allow_null=True, required=False, label=_('Regularly perform')
     )
     interval = serializers.IntegerField(
         default=24, allow_null=True, required=False, label=_('Interval')
     )
-    periodic_display = serializers.CharField(read_only=True, label=_('Run period'))
 
     INTERVAL_MAX = 65535
     INTERVAL_MIN = 1
@@ -134,15 +135,6 @@ class PeriodTaskSerializerMixin(serializers.Serializer):
         crontab = self.initial_data.get('crontab')
         interval = self.initial_data.get('interval')
         if ok and not any([crontab, interval]):
-            msg = _("Require interval or crontab setting")
+            msg = _("Require periodic or regularly perform setting")
             raise serializers.ValidationError(msg)
         return ok
-
-    def validate(self, attrs):
-        attrs = super().validate(attrs)
-        if not attrs.get('is_periodic'):
-            attrs['interval'] = None
-            attrs['crontab'] = ''
-        if attrs.get('crontab'):
-            attrs['interval'] = None
-        return attrs

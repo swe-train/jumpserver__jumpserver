@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 class OpsConfig(AppConfig):
     name = 'ops'
-    verbose_name = _('App Ops')
+    verbose_name = _('App ops')
 
     def ready(self):
         from orgs.models import Organization

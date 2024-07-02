@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 class NotificationsConfig(AppConfig):
     name = 'notifications'
-    verbose_name = _('App Notifications')
+    verbose_name = _('Notifications')
 
     def ready(self):
         from . import signal_handlers  # noqa
