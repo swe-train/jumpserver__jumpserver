@@ -54,7 +54,6 @@ urlpatterns = [
     # components
     path('components/metrics/', api.ComponentsMetricsAPIView.as_view(), name='components-metrics'),
     path('components/connect-methods/', api.ConnectMethodListApi.as_view(), name='connect-methods'),
-    path('loki/logs/', api.LokiLogAPI.as_view(), name='loki-logs'),
 ]
 
 urlpatterns += router.urls

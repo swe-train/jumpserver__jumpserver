@@ -41,10 +41,7 @@ ENV VERSION=$VERSION
 WORKDIR /opt/jumpserver
 ADD . .
 RUN echo > /opt/jumpserver/config.yml \
-    && \
-    if [ -n "${VERSION}" ]; then \
-        sed -i "s@VERSION = .*@VERSION = '${VERSION}'@g" apps/jumpserver/const.py; \
-    fi
+    && cd utils && bash -ixeu build.sh
 
 FROM python:3.11-slim-bullseye as stage-2
 ARG TARGETARCH
@@ -56,7 +53,6 @@ ARG BUILD_DEPENDENCIES="              \
 
 ARG DEPENDENCIES="                    \
         freetds-dev                   \
-        gettext                       \
         libffi-dev                    \
         libjpeg-dev                   \
         libkrb5-dev                   \
@@ -106,15 +102,7 @@ RUN --mount=type=cache,target=/root/.cache,sharing=locked \
     && pip install poetry -i ${PIP_MIRROR} \
     && poetry config virtualenvs.create false \
     && . /opt/py3/bin/activate \
-    && poetry install --without xpack
-
-COPY --from=stage-1 /opt/jumpserver /opt/jumpserver
-
-RUN set -ex \
-    && export SECRET_KEY=$(head -c100 < /dev/urandom | base64 | tr -dc A-Za-z0-9 | head -c 48) \
-    && . /opt/py3/bin/activate \
-    && cd apps \
-    && python manage.py compilemessages
+    && poetry install --only=main
 
 FROM python:3.11-slim-bullseye
 ARG TARGETARCH
@@ -150,9 +138,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     && sed -i "s@# export @export @g" ~/.bashrc \
     && sed -i "s@# alias @alias @g" ~/.bashrc
 
-COPY --from=stage-2 /opt /opt
+COPY --from=stage-2 /opt/py3 /opt/py3
 COPY --from=stage-1 /usr/local/bin /usr/local/bin
-COPY --from=stage-1 /opt/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
+COPY --from=stage-1 /opt/jumpserver/release/jumpserver /opt/jumpserver
+COPY --from=stage-1 /opt/jumpserver/release/jumpserver/apps/libs/ansible/ansible.cfg /etc/ansible/
 
 WORKDIR /opt/jumpserver
 

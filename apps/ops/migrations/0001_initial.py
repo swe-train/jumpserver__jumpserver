@@ -178,7 +178,6 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ['date_created'],
-                'verbose_name': 'Playbook'
             },
         ),
     ]
